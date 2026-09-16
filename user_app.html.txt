@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Emmbio Logistics - User App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{ --coral:#FF5A5F; --maroon:#4A1020; --bg:#FFF5F5; }
+body{font-family:Arial; margin:0; background:var(--bg); color:#222}
+.header{background:var(--coral); color:var(--maroon); padding:15px; text-align:center; font-weight:900; font-size:18px; display:flex; align-items:center; justify-content:center; gap:12px; flex-direction:column}
+.header img{height:70px; border-radius:12px; background:white; padding:5px; box-shadow:0 2px 8px #0003}
+.card{background:white; margin:12px; padding:16px; border-radius:16px; box-shadow:0 4px 12px #0001; border-left:4px solid var(--coral)}
+input,button{width:100%; padding:12px; margin:6px 0; border-radius:10px; border:1px solid #ddd; box-sizing:border-box}
+button{background:var(--maroon); color:white; border:none; font-weight:bold; cursor:pointer; font-size:15px}
+button.secondary{background:var(--coral); color:white}
+#map{height:320px; border-radius:12px; border:2px solid var(--coral)}
+.badge{display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:bold}
+.credit{background:#d4edda; color:#155724} .debit{background:#f8d7da; color:#721c24}
+h3{margin:0 0 10px 0; color:var(--maroon)}
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="logo.png" alt="Emmbio Logo" onerror="this.style.display='none'">
+  <div>EMMBIO LOGISTICS AND<br><small style="font-weight:400; letter-spacing:2px; font-size:11px">DISPATCH RIDER SERVICES</small></div>
+</div>
+
+<div class="card">
+<h3>1. Register / Login</h3>
+<input id="name" placeholder="Your Name" value="Test User">
+<input id="email" placeholder="Email" value="test@emmbio.com">
+<button id="btnRegister">Register & Get Wallet ID</button>
+<p id="clientInfo"></p>
+</div>
+
+<div class="card">
+<h3>2. Wallet - CREDIT / DEBIT Live</h3>
+<p>Balance: <b id="balance" style="color:var(--maroon); font-size:20px">0</b> NGN</p>
+<input id="amount" type="number" placeholder="Amount e.g 5000">
+<button id="btnFund" class="secondary">CREDIT Wallet (Fund)</button>
+<button id="btnCharge">DEBIT Wallet (Pay)</button>
+<div id="txs"></div>
+</div>
+
+<div class="card">
+<h3>3. Create Delivery</h3>
+<input id="pickup" placeholder="Pickup Address" value="Ikeja Computer Village">
+<input id="dropoff" placeholder="Dropoff Address" value="Lekki Phase 1">
+<button id="btnShip">Create Shipment Request</button>
+<p id="shipmentInfo"></p>
+</div>
+
+<div class="card">
+<h3>4. Live Tracking Map</h3>
+<div id="map"></div>
+<p id="trackStatus">No active tracking</p>
+</div>
+
+<script>
+const API = "http://127.0.0.1:8080";
+let CLIENT_ID = localStorage.getItem("emmbio_client") || "";
+let REQUEST_ID = "";
+let map, riderMarker;
+
+document.addEventListener("DOMContentLoaded", () => {
+  map = L.map('map').setView([6.5244, 3.3792], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  riderMarker = L.marker([6.5244,3.3792]).addTo(map);
+  if(CLIENT_ID){
+    document.getElementById("clientInfo").innerHTML = "Logged in: <b>"+CLIENT_ID+"</b>";
+    getBalance(); getTxs();
+  }
+  document.getElementById("btnRegister").onclick = register;
+  document.getElementById("btnFund").onclick = fund;
+  document.getElementById("btnCharge").onclick = charge;
+  document.getElementById("btnShip").onclick = createShipment;
+});
+async function safeFetch(url, opts){
+  try{
+    let res = await fetch(url, opts);
+    let txt = await res.text();
+    try{ return JSON.parse(txt); } catch{ return {raw:txt}; }
+  }catch(e){ alert("Cannot reach API at "+url); return null; }
+}
+async function register(){
+  let n = document.getElementById("name").value;
+  let e = document.getElementById("email").value;
+  let data = await safeFetch(`${API}/api/v1/clients/register?name=${encodeURIComponent(n)}&email=${encodeURIComponent(e)}`, {method:"POST"});
+  if(!data) return;
+  CLIENT_ID = data.client_id || data.id;
+  localStorage.setItem("emmbio_client", CLIENT_ID);
+  document.getElementById("clientInfo").innerHTML = `✅ Registered: <b>${CLIENT_ID}</b>`;
+  getBalance(); getTxs();
+}
+async function fund(){
+  if(!CLIENT_ID) return alert("Register first");
+  let a = document.getElementById("amount").value;
+  let d = await safeFetch(`${API}/api/v1/wallet/fund?client_id=${CLIENT_ID}&amount=${a}`, {method:"POST"});
+  if(d) { getBalance(); getTxs(); }
+}
+async function charge(){
+  if(!CLIENT_ID) return alert("Register first");
+  let a = document.getElementById("amount").value;
+  let d = await safeFetch(`${API}/api/v1/wallet/charge?client_id=${CLIENT_ID}&amount=${a}&request_id=${REQUEST_ID||'SHIPMENT'}`, {method:"POST"});
+  if(d) { getBalance(); getTxs(); }
+}
+async function getBalance(){
+  if(!CLIENT_ID) return;
+  let d = await safeFetch(`${API}/api/v1/wallet/balance/${CLIENT_ID}`);
+  if(d && d.balance !== undefined) document.getElementById("balance").innerText = d.balance;
+}
+async function getTxs(){
+  if(!CLIENT_ID) return;
+  let txs = await safeFetch(`${API}/api/v1/transactions/${CLIENT_ID}`);
+  if(Array.isArray(txs)){
+    document.getElementById("txs").innerHTML = txs.map(t=>`<div style="margin:5px 0"><span class="badge ${t.type.toLowerCase()}">${t.type}</span> ${t.amount} NGN</div>`).join("");
+  }
+}
+async function createShipment(){
+  if(!CLIENT_ID) return alert("Register first");
+  let p = document.getElementById("pickup").value;
+  let d = document.getElementById("dropoff").value;
+  let data = await safeFetch(`${API}/api/v1/shipments?client_id=${CLIENT_ID}&pickup_lat=6.6018&pickup_lng=3.3515&dropoff_lat=6.4557&dropoff_lng=3.4731&pickup_address=${encodeURIComponent(p)}&dropoff_address=${encodeURIComponent(d)}`, {method:"POST"});
+  if(!data) return;
+  REQUEST_ID = data.request_id;
+  document.getElementById("shipmentInfo").innerHTML = `✅ Request: <b>${REQUEST_ID}</b> | Price: ${data.price} NGN`;
+  connectTracking(REQUEST_ID);
+}
+function connectTracking(reqId){
+  let ws = new WebSocket(`ws://127.0.0.1:8080/ws/tracking/${reqId}`);
+  document.getElementById("trackStatus").innerText = "Tracking LIVE for "+reqId;
+  ws.onmessage = (e)=>{
+    try{
+      let data = JSON.parse(e.data);
+      let loc = data.rider_location || data;
+      if(loc && loc.lat){ riderMarker.setLatLng([loc.lat, loc.lng]); map.setView([loc.lat, loc.lng]); }
+    }catch{}
+  };
+}
+</script>
+</body>
+</html>
