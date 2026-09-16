@@ -58,7 +58,7 @@ h3{margin:0 0 10px 0; color:var(--maroon)}
 </div>
 
 <script>
-const API = "http://127.0.0.1:8080";
+const API = "https://izedigi.github.io/Emmbio/";
 let CLIENT_ID = localStorage.getItem("emmbio_client") || "";
 let REQUEST_ID = "";
 let map, riderMarker;
