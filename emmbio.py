@@ -11,6 +11,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/")
+def home():
+    return {"status": "API is live"}
+
+# YOUR OTHER ROUTES BELOW THIS
+@app.post("/register")
+def register():
+    # your code
+    return {"message": "registered"}
+
+@app.get("/wallet")
+def wallet():
+    # your code
+    return {"wallet": "0x..."}
+
 import uvicorn
 from sqlalchemy import create_engine, Column, String, Float, Boolean, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
