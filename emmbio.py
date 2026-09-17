@@ -43,4 +43,4 @@ def banks(client_id: str):
 
 # THIS LINE FIXES YOUR ERROR - runs without needing "main:app"
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+    uvicorn.run(app, host="https://emmbio.onrender.com)
