@@ -1,5 +1,16 @@
 # emmbio.py - SINGLE FILE, NO IMPORT ERRORS
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 import uvicorn
 from sqlalchemy import create_engine, Column, String, Float, Boolean, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
