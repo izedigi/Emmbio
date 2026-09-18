@@ -16,7 +16,7 @@ def home():
     return {"status": "API is live"}
 
 # YOUR OTHER ROUTES BELOW THIS
-@app.post("/register")
+@app.get("/register")
 def register():
     # your code
     return {"message": "registered"}
