@@ -1,143 +1,1366 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>Emmbio Logistics - User App</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-:root{ --coral:#FF5A5F; --maroon:#4A1020; --bg:#FFF5F5; }
-body{font-family:Arial; margin:0; background:var(--bg); color:#222}
-.header{background:var(--coral); color:var(--maroon); padding:15px; text-align:center; font-weight:900; font-size:18px; display:flex; align-items:center; justify-content:center; gap:12px; flex-direction:column}
-.header img{height:70px; border-radius:12px; background:white; padding:5px; box-shadow:0 2px 8px #0003}
-.card{background:white; margin:12px; padding:16px; border-radius:16px; box-shadow:0 4px 12px #0001; border-left:4px solid var(--coral)}
-input,button{width:100%; padding:12px; margin:6px 0; border-radius:10px; border:1px solid #ddd; box-sizing:border-box}
-button{background:var(--maroon); color:white; border:none; font-weight:bold; cursor:pointer; font-size:15px}
-button.secondary{background:var(--coral); color:white}
-#map{height:320px; border-radius:12px; border:2px solid var(--coral)}
-.badge{display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:bold}
-.credit{background:#d4edda; color:#155724} .debit{background:#f8d7da; color:#721c24}
-h3{margin:0 0 10px 0; color:var(--maroon)}
+:root{
+--coral:#FF5A5F;
+--maroon:#4A1020;
+--bg:#FFF5F5;
+--green:#198754;
+--blue:#1769aa;
+--danger:#dc3545;
+--light:#f8f9fa;
+--border:#ddd;
+}
+*{
+box-sizing:border-box;
+}
+body{
+font-family:Arial,Helvetica,sans-serif;
+margin:0;
+background:var(--bg);
+color:#222;
+}
+.header{
+background:var(--coral);
+color:var(--maroon);
+padding:15px;
+text-align:center;
+font-weight:900;
+font-size:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:12px;
+flex-direction:column;
+}
+.header img{
+height:70px;
+border-radius:12px;
+background:white;
+padding:5px;
+box-shadow:0 2px 8px #0003;
+}
+.container{
+max-width:900px;
+margin:auto;
+padding-bottom:30px;
+}
+.card{
+background:white;
+margin:12px;
+padding:16px;
+border-radius:16px;
+box-shadow:0 4px 12px #0001;
+border-left:4px solid var(--coral);
+}
+.card.hidden{
+display:none;
+}
+h3{
+margin:0 0 10px 0;
+color:var(--maroon);
+}
+h4{
+color:var(--maroon);
+margin-bottom:8px;
+}
+label{
+display:block;
+font-weight:bold;
+margin-top:10px;
+color:#444;
+}
+input,
+select,
+textarea,
+button{
+width:100%;
+padding:12px;
+margin:6px 0;
+border-radius:10px;
+border:1px solid var(--border);
+font-size:15px;
+box-sizing:border-box;
+}
+textarea{
+min-height:90px;
+resize:vertical;
+}
+button{
+background:var(--maroon);
+color:white;
+border:none;
+font-weight:bold;
+cursor:pointer;
+font-size:15px;
+}
+button:hover{
+opacity:.92;
+}
+button.secondary{
+background:var(--coral);
+}
+button.green{
+background:var(--green);
+}
+button.blue{
+background:var(--blue);
+}
+button.danger{
+background:var(--danger);
+}
+button.small{
+width:auto;
+padding:8px 12px;
+font-size:13px;
+}
+.tabs{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin:12px;
+}
+.tab{
+background:#eee;
+color:#333;
+}
+.tab.active{
+background:var(--maroon);
+color:white;
+}
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+@media(max-width:650px){
+.grid{
+grid-template-columns:1fr;
+}
+}
+.info{
+background:#f8f9fa;
+padding:10px;
+border-radius:10px;
+margin-top:8px;
+}
+.success{
+color:#155724;
+background:#d4edda;
+padding:10px;
+border-radius:10px;
+}
+.error{
+color:#721c24;
+background:#f8d7da;
+padding:10px;
+border-radius:10px;
+}
+.warning{
+color:#856404;
+background:#fff3cd;
+padding:10px;
+border-radius:10px;
+}
+.badge{
+display:inline-block;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+font-weight:bold;
+}
+.credit{
+background:#d4edda;
+color:#155724;
+}
+.debit{
+background:#f8d7da;
+color:#721c24;
+}
+.request-card{
+border:1px solid #eee;
+border-left:4px solid var(--coral);
+padding:12px;
+margin:10px 0;
+border-radius:10px;
+background:#fff;
+}
+.request-card.new{
+background:#fff8f8;
+}
+.status{
+font-weight:bold;
+color:var(--maroon);
+}
+#map{
+height:360px;
+border-radius:12px;
+border:2px solid var(--coral);
+margin-top:10px;
+}
+.location-row{
+display:grid;
+grid-template-columns:1fr auto;
+gap:8px;
+align-items:end;
+}
+.location-row button{
+width:auto;
+white-space:nowrap;
+}
+.modal{
+display:none;
+position:fixed;
+z-index:9999;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:#0008;
+align-items:center;
+justify-content:center;
+padding:15px;
+}
+.modal-content{
+background:white;
+width:100%;
+max-width:500px;
+max-height:90vh;
+overflow:auto;
+border-radius:16px;
+padding:20px;
+}
+.close{
+float:right;
+font-size:25px;
+cursor:pointer;
+color:var(--maroon);
+}
+.notification{
+position:fixed;
+right:15px;
+bottom:15px;
+background:var(--maroon);
+color:white;
+padding:15px;
+border-radius:12px;
+max-width:330px;
+display:none;
+z-index:10000;
+box-shadow:0 5px 20px #0004;
+}
+.empty{
+text-align:center;
+color:#777;
+padding:20px;
+}
 </style>
 </head>
 <body>
 <div class="header">
-  <img src="logo.png" alt="Emmbio Logo" onerror="this.style.display='none'">
-  <div>EMMBIO LOGISTICS AND<br><small style="font-weight:400; letter-spacing:2px; font-size:11px">DISPATCH RIDER SERVICES</small></div>
+<img src="logo.png" alt="Emmbio Logo"
+onerror="this.style.display='none'">
+<div>
+EMMBIO LOGISTICS AND<br>
+<small style="font-weight:400;letter-spacing:2px;font-size:11px">
+DISPATCH RIDER SERVICES
+</small>
 </div>
-
+</div>
+<div class="container">
+<!-- MODE TABS -->
+<div class="tabs">
+<button class="tab active" id="clientTab">CLIENT</button>
+<button class="tab" id="riderTab">DISPATCH RIDER</button>
+</div>
+<!-- ================= CLIENT REGISTRATION ================= -->
+<div id="clientSection">
 <div class="card">
-<h3>1. Register / Login</h3>
-<input id="name" placeholder="Your Name" value="Test User">
-<input id="email" placeholder="Email" value="test@emmbio.com">
-<button id="btnRegister">Register & Get Wallet ID</button>
+<h3>1. Client Registration / Login</h3>
+<div class="grid">
+<div>
+<label for="name">Full Name</label>
+<input id="name" placeholder="Enter your full name">
+</div>
+<div>
+<label for="email">Email Address</label>
+<input id="email" type="email" placeholder="you@example.com">
+</div>
+<div>
+<label for="phone">Phone Number</label>
+<input id="phone" type="tel" placeholder="+234 800 000 0000">
+</div>
+<div>
+<label for="dob">Date of Birth</label>
+<input id="dob" type="date">
+</div>
+</div>
+<label for="address">Residential Address</label>
+<textarea id="address" placeholder="Enter your full address"></textarea>
+<button id="btnRegister">Register Client</button>
 <p id="clientInfo"></p>
 </div>
-
+<!-- ================= WALLET ================= -->
 <div class="card">
-<h3>2. Wallet - CREDIT / DEBIT Live</h3>
-<p>Balance: <b id="balance" style="color:var(--maroon); font-size:20px">0</b> NGN</p>
-<input id="amount" type="number" placeholder="Amount e.g 5000">
-<button id="btnFund" class="secondary">CREDIT Wallet (Fund)</button>
-<button id="btnCharge">DEBIT Wallet (Pay)</button>
+<h3>2. Wallet - CREDIT / DEBIT</h3>
+<p>
+Balance:
+<b id="balance" style="color:var(--maroon);font-size:20px">0</b> NGN
+</p>
+<input id="amount" type="number" min="1" placeholder="Amount e.g. 5000">
+<button id="btnFund" class="secondary">
+CREDIT Wallet (Fund)
+</button>
+<button id="btnCharge">
+DEBIT Wallet (Pay)
+</button>
 <div id="txs"></div>
 </div>
-
+<!-- ================= DELIVERY REQUEST ================= -->
 <div class="card">
-<h3>3. Create Delivery</h3>
-<input id="pickup" placeholder="Pickup Address" value="Ikeja Computer Village">
-<input id="dropoff" placeholder="Dropoff Address" value="Lekki Phase 1">
-<button id="btnShip">Create Shipment Request</button>
+<h3>3. Request Delivery Service</h3>
+<p class="info">
+Enter your pickup and destination addresses. You can also use your current
+location.
+</p>
+<label for="pickup">Pickup Location / Address</label>
+<div class="location-row">
+<input id="pickup" placeholder="Pickup address">
+<button id="btnPickupLocation" class="blue">
+📍 Use Location
+</button>
+</div>
+<input id="pickupLat" type="hidden">
+<input id="pickupLng" type="hidden">
+<label for="dropoff">Destination / Delivery Address</label>
+<div class="location-row">
+<input id="dropoff" placeholder="Destination address">
+<button id="btnDropoffLocation" class="blue">
+📍 Use Location
+</button>
+</div>
+<input id="dropoffLat" type="hidden">
+<input id="dropoffLng" type="hidden">
+<button id="btnUseMap" class="secondary">
+Select Locations On Map
+</button>
+<button id="btnShip">
+Create Shipment Request
+</button>
 <p id="shipmentInfo"></p>
 </div>
-
+<!-- ================= MAP ================= -->
 <div class="card">
-<h3>4. Live Tracking Map</h3>
+<h3>4. Location & Live Tracking</h3>
+<p class="info">
+Click the map to select a location. The first click selects pickup and the
+second click selects destination.
+</p>
 <div id="map"></div>
-<p id="trackStatus">No active tracking</p>
+<p id="mapStatus">Map ready.</p>
+<p id="trackStatus">
+No active tracking
+</p>
 </div>
-
+</div>
+<!-- ================= RIDER SECTION ================= -->
+<div id="riderSection" class="hidden">
+<div class="card">
+<h3>Dispatch Rider Registration</h3>
+<p class="warning">
+Rider information should be verified by your company before the rider is
+allowed to accept delivery requests.
+</p>
+<div class="grid">
+<div>
+<label for="riderName">Full Name</label>
+<input id="riderName" placeholder="Rider full name">
+</div>
+<div>
+<label for="riderDob">Date of Birth</label>
+<input id="riderDob" type="date">
+</div>
+<div>
+<label for="nin">NIN Number</label>
+<input id="nin" placeholder="Enter NIN number">
+</div>
+<div>
+<label for="motorcycleSn">Motorcycle Serial Number</label>
+<input id="motorcycleSn" placeholder="Motorcycle serial number">
+</div>
+<div>
+<label for="motorcycleLicense">Motorcycle Licence</label>
+<input id="motorcycleLicense" placeholder="Licence number">
+</div>
+<div>
+<label for="riderPhone">Phone Number</label>
+<input id="riderPhone" type="tel" placeholder="+234 800 000 0000">
+</div>
+</div>
+<label for="riderAddress">Residential Address</label>
+<textarea id="riderAddress" placeholder="Rider residential address"></textarea>
+<h4>Guarantor Information</h4>
+<div class="grid">
+<div>
+<label for="guarantorName">Guarantor Name</label>
+<input id="guarantorName" placeholder="Guarantor full name">
+</div>
+<div>
+<label for="guarantorPhone">Guarantor Phone Number</label>
+<input id="guarantorPhone" type="tel" placeholder="+234 800 000 0000">
+</div>
+</div>
+<button id="btnRiderRegister" class="green">
+Register Dispatch Rider
+</button>
+<p id="riderInfo"></p>
+</div>
+<!-- ================= RIDER DASHBOARD ================= -->
+<div class="card">
+<h3>Dispatch Rider Dashboard</h3>
+<p id="riderStatus">
+Not registered as a dispatch rider.
+</p>
+<button id="btnRiderNotifications" class="blue">
+Check New Delivery Requests
+</button>
+<button id="btnRiderLocation" class="secondary">
+Share My Current Location
+</button>
+<div id="riderRequests">
+<div class="empty">
+No delivery requests loaded.
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- NOTIFICATION -->
+<div id="notification" class="notification"></div>
 <script>
+/* ============================================================
+EMMBIO LOGISTICS USER APP
+============================================================ */
 const API = "https://emmbio.onrender.com";
-let CLIENT_ID = localStorage.getItem("emmbio_client") || "";
+/*
+IMPORTANT:
+These endpoints need to exist on your backend.
+Change them if your backend uses different endpoint names.
+*/
+const ENDPOINTS = {
+clientRegister: "/api/v1/clients/register",
+riderRegister: "/api/v1/riders/register",
+riderRequests: "/api/v1/riders/requests",
+acceptRequest: "/api/v1/riders/requests/accept",
+riderLocation: "/api/v1/riders/location"
+};
+let CLIENT_ID =
+localStorage.getItem("emmbio_client") || "";
+let RIDER_ID =
+localStorage.getItem("emmbio_rider") || "";
 let REQUEST_ID = "";
-let map, riderMarker;
-
+let map;
+let riderMarker;
+let pickupMarker;
+let dropoffMarker;
+let trackingSocket = null;
+let riderPolling = null;
+/* ============================================================
+INITIALIZE
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  map = L.map('map').setView([6.5244, 3.3792], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  riderMarker = L.marker([6.5244,3.3792]).addTo(map);
-  if(CLIENT_ID){
-    document.getElementById("clientInfo").innerHTML = "Logged in: <b>"+CLIENT_ID+"</b>";
-    getBalance(); getTxs();
-  }
-  document.getElementById("btnRegister").onclick = register;
-  document.getElementById("btnFund").onclick = fund;
-  document.getElementById("btnCharge").onclick = charge;
-  document.getElementById("btnShip").onclick = createShipment;
+initializeMap();
+document.getElementById("clientTab")
+.addEventListener("click", showClient);
+document.getElementById("riderTab")
+.addEventListener("click", showRider);
+document.getElementById("btnRegister")
+.addEventListener("click", registerClient);
+document.getElementById("btnFund")
+.addEventListener("click", fund);
+document.getElementById("btnCharge")
+.addEventListener("click", charge);
+document.getElementById("btnShip")
+.addEventListener("click", createShipment);
+document.getElementById("btnPickupLocation")
+.addEventListener("click", useCurrentLocationForPickup);
+document.getElementById("btnDropoffLocation")
+.addEventListener("click", useCurrentLocationForDropoff);
+document.getElementById("btnUseMap")
+.addEventListener("click", enableMapSelection);
+document.getElementById("btnRiderRegister")
+.addEventListener("click", registerRider);
+document.getElementById("btnRiderNotifications")
+.addEventListener("click", getRiderRequests);
+document.getElementById("btnRiderLocation")
+.addEventListener("click", shareRiderLocation);
+if(CLIENT_ID){
+document.getElementById("clientInfo").innerHTML =
+successMessage(
+"Logged in client ID: ",
+CLIENT_ID
+);
+getBalance();
+getTxs();
+}
+if(RIDER_ID){
+document.getElementById("riderStatus").innerHTML =
+successMessage(
+"Logged in rider ID: ",
+RIDER_ID
+);
+startRiderPolling();
+}
 });
-async function safeFetch(url, opts){
-  try{
-    let res = await fetch(url, opts);
-    let txt = await res.text();
-    try{ return JSON.parse(txt); } catch{ return {raw:txt}; }
-  }catch(e){ alert("Cannot reach API at "+url); return null; }
+/* ============================================================
+BASIC HELPERS
+============================================================ */
+function escapeHtml(value){
+return String(value ?? "")
+.replace(/&/g,"&")
+.replace(/</g,"<")
+.replace(/>/g,">")
+.replace(/"/g,""")
+.replace(/'/g,"'");
 }
-async function register(){
-  let n = document.getElementById("name").value;
-  let e = document.getElementById("email").value;
-  let data = await safeFetch(`${API}/api/v1/clients/register?name=${encodeURIComponent(n)}&email=${encodeURIComponent(e)}`, {method:"POST"});
-  if(!data) return;
-  CLIENT_ID = data.client_id || data.id;
-  localStorage.setItem("emmbio_client", CLIENT_ID);
-  document.getElementById("clientInfo").innerHTML = `✅ Registered: <b>${CLIENT_ID}</b>`;
-  getBalance(); getTxs();
+function successMessage(label,id){
+return `
+<div class="success">
+✅ ${escapeHtml(label)}
+<b>${escapeHtml(id)}</b>
+</div>
+`;
 }
+function errorMessage(message){
+return `
+<div class="error">
+❌ ${escapeHtml(message)}
+</div>
+`;
+}
+function showNotification(message){
+const box =
+document.getElementById("notification");
+box.innerText = message;
+box.style.display = "block";
+setTimeout(() => {
+box.style.display = "none";
+},5000);
+}
+/* ============================================================
+API FETCH
+============================================================ */
+async function safeFetch(url,opts = {}){
+try{
+const res = await fetch(url,{
+...opts,
+headers:{
+"Content-Type":"application/json",
+...(opts.headers || {})
+}
+});
+const txt = await res.text();
+let data;
+try{
+data = JSON.parse(txt);
+}catch{
+data = {raw:txt};
+}
+if(!res.ok){
+const message =
+data?.detail ||
+data?.message ||
+data?.error ||
+`Server error (${res.status})`;
+throw new Error(message);
+}
+return data;
+}catch(e){
+console.error(e);
+alert(e.message || "Unable to contact the server.");
+return null;
+}
+}
+/* ============================================================
+CLIENT REGISTRATION
+============================================================ */
+async function registerClient(){
+const name =
+document.getElementById("name").value.trim();
+const email =
+document.getElementById("email").value.trim();
+const phone =
+document.getElementById("phone").value.trim();
+const dob =
+document.getElementById("dob").value;
+const address =
+document.getElementById("address").value.trim();
+if(!name ||
+!email ||
+!phone ||
+!dob ||
+!address){
+document.getElementById("clientInfo").innerHTML =
+errorMessage(
+"Please complete all client registration fields."
+);
+return;
+}
+const payload = {
+name,
+email,
+phone,
+date_of_birth: dob,
+dob,
+address
+};
+const data = await safeFetch(
+API + ENDPOINTS.clientRegister,
+{
+method:"POST",
+body:JSON.stringify(payload)
+}
+);
+if(!data) return;
+CLIENT_ID =
+data.client_id ||
+data.id ||
+data.clientId;
+if(!CLIENT_ID){
+document.getElementById("clientInfo").innerHTML =
+errorMessage(
+"Registration succeeded but the server did not return a client ID."
+);
+return;
+}
+localStorage.setItem(
+"emmbio_client",
+CLIENT_ID
+);
+document.getElementById("clientInfo").innerHTML =
+successMessage(
+"Client registered successfully. Client ID: ",
+CLIENT_ID
+);
+getBalance();
+getTxs();
+showNotification(
+"Client registration completed."
+);
+}
+/* ============================================================
+RIDER REGISTRATION
+============================================================ */
+async function registerRider(){
+const name =
+document.getElementById("riderName").value.trim();
+const dob =
+document.getElementById("riderDob").value;
+const nin =
+document.getElementById("nin").value.trim();
+const motorcycleSn =
+document.getElementById("motorcycleSn").value.trim();
+const motorcycleLicense =
+document.getElementById("motorcycleLicense").value.trim();
+const phone =
+document.getElementById("riderPhone").value.trim();
+const address =
+document.getElementById("riderAddress").value.trim();
+const guarantorName =
+document.getElementById("guarantorName").value.trim();
+const guarantorPhone =
+document.getElementById("guarantorPhone").value.trim();
+if(!name ||
+!dob ||
+!nin ||
+!motorcycleSn ||
+!motorcycleLicense ||
+!phone ||
+!address ||
+!guarantorName ||
+!guarantorPhone){
+document.getElementById("riderInfo").innerHTML =
+errorMessage(
+"Please complete every rider and guarantor field."
+);
+return;
+}
+const payload = {
+name:name,
+dob:dob,
+date_of_birth:dob,
+nin:nin,
+nin_number:nin,
+motorcycle_sn:motorcycleSn,
+motorcycle_serial_number:motorcycleSn,
+motorcycle_license:motorcycleLicense,
+motorcycle_licence:motorcycleLicense,
+phone:phone,
+address:address,
+guarantor_name:guarantorName,
+guarantor_phone:guarantorPhone
+};
+const data = await safeFetch(
+API + ENDPOINTS.riderRegister,
+{
+method:"POST",
+body:JSON.stringify(payload)
+}
+);
+if(!data) return;
+RIDER_ID =
+data.rider_id ||
+data.id ||
+data.riderId;
+if(!RIDER_ID){
+document.getElementById("riderInfo").innerHTML =
+errorMessage(
+"Registration succeeded but the server did not return a rider ID."
+);
+return;
+}
+localStorage.setItem(
+"emmbio_rider",
+RIDER_ID
+);
+document.getElementById("riderInfo").innerHTML =
+successMessage(
+"Rider registered successfully. Rider ID: ",
+RIDER_ID
+);
+document.getElementById("riderStatus").innerHTML =
+successMessage(
+"Active rider ID: ",
+RIDER_ID
+);
+showNotification(
+"Dispatch rider registration completed."
+);
+startRiderPolling();
+}
+/* ============================================================
+WALLET
+============================================================ */
 async function fund(){
-  if(!CLIENT_ID) return alert("Register first");
-  let a = document.getElementById("amount").value;
-  let d = await safeFetch(`${API}/api/v1/wallet/fund?client_id=${CLIENT_ID}&amount=${a}`, {method:"POST"});
-  if(d) { getBalance(); getTxs(); }
+if(!CLIENT_ID)
+return alert("Please register as a client first.");
+const amount =
+document.getElementById("amount").value;
+if(!amount || Number(amount) <= 0)
+return alert("Enter a valid amount.");
+const d = await safeFetch(
+`${API}/api/v1/wallet/fund?client_id=${encodeURIComponent(CLIENT_ID)}&amount=${encodeURIComponent(amount)}`,
+{
+method:"POST"
+}
+);
+if(d){
+getBalance();
+getTxs();
+showNotification(
+"Wallet credited successfully."
+);
+}
 }
 async function charge(){
-  if(!CLIENT_ID) return alert("Register first");
-  let a = document.getElementById("amount").value;
-  let d = await safeFetch(`${API}/api/v1/wallet/charge?client_id=${CLIENT_ID}&amount=${a}&request_id=${REQUEST_ID||'SHIPMENT'}`, {method:"POST"});
-  if(d) { getBalance(); getTxs(); }
+if(!CLIENT_ID)
+return alert("Please register as a client first.");
+const amount =
+document.getElementById("amount").value;
+if(!amount || Number(amount) <= 0)
+return alert("Enter a valid amount.");
+const d = await safeFetch(
+`${API}/api/v1/wallet/charge?client_id=${encodeURIComponent(CLIENT_ID)}&amount=${encodeURIComponent(amount)}&request_id=${encodeURIComponent(REQUEST_ID || "SHIPMENT")}`,
+{
+method:"POST"
+}
+);
+if(d){
+getBalance();
+getTxs();
+showNotification(
+"Wallet debited successfully."
+);
+}
 }
 async function getBalance(){
-  if(!CLIENT_ID) return;
-  let d = await safeFetch(`${API}/api/v1/wallet/balance/${CLIENT_ID}`);
-  if(d && d.balance !== undefined) document.getElementById("balance").innerText = d.balance;
+if(!CLIENT_ID) return;
+const d = await safeFetch(
+`${API}/api/v1/wallet/balance/${encodeURIComponent(CLIENT_ID)}`
+);
+if(d && d.balance !== undefined){
+document.getElementById("balance")
+.innerText = d.balance;
+}
 }
 async function getTxs(){
-  if(!CLIENT_ID) return;
-  let txs = await safeFetch(`${API}/api/v1/transactions/${CLIENT_ID}`);
-  if(Array.isArray(txs)){
-    document.getElementById("txs").innerHTML = txs.map(t=>`<div style="margin:5px 0"><span class="badge ${t.type.toLowerCase()}">${t.type}</span> ${t.amount} NGN</div>`).join("");
-  }
+if(!CLIENT_ID) return;
+const txs = await safeFetch(
+`${API}/api/v1/transactions/${encodeURIComponent(CLIENT_ID)}`
+);
+if(Array.isArray(txs)){
+document.getElementById("txs").innerHTML =
+txs.map(t => {
+const type =
+String(t.type || "").toLowerCase();
+const badgeClass =
+type === "credit"
+? "credit"
+: "debit";
+return `
+<div style="margin:5px 0">
+<span class="badge ${badgeClass}">
+${escapeHtml(t.type)}
+</span>
+${escapeHtml(t.amount)} NGN
+</div>
+`;
+}).join("");
 }
+}
+/* ============================================================
+MAP
+============================================================ */
+function initializeMap(){
+map = L.map("map")
+.setView([6.5244,3.3792],11);
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+attribution:"© OpenStreetMap contributors"
+}
+).addTo(map);
+riderMarker =
+L.marker([6.5244,3.3792])
+.addTo(map)
+.bindPopup("Rider location");
+map.on("click",function(e){
+const lat =
+e.latlng.lat;
+const lng =
+e.latlng.lng;
+if(!window.mapSelectionEnabled)
+return;
+if(!document.getElementById("pickupLat").value){
+setPickupLocation(
+lat,
+lng,
+`Map location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`
+);
+document.getElementById("mapStatus").innerText =
+"Pickup selected. Click the map again to select destination.";
+return;
+}
+if(!document.getElementById("dropoffLat").value){
+setDropoffLocation(
+lat,
+lng,
+`Map location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`
+);
+document.getElementById("mapStatus").innerText =
+"Destination selected.";
+window.mapSelectionEnabled = false;
+}
+});
+}
+function enableMapSelection(){
+window.mapSelectionEnabled = true;
+document.getElementById("mapStatus").innerText =
+"Map selection enabled. Click once for pickup, then once for destination.";
+showNotification(
+"Click the map to select pickup and destination."
+);
+}
+/* ============================================================
+CURRENT LOCATION
+============================================================ */
+function getCurrentPosition(){
+return new Promise((resolve,reject)=>{
+if(!navigator.geolocation){
+reject(
+new Error(
+"Geolocation is not supported by this browser."
+)
+);
+return;
+}
+navigator.geolocation.getCurrentPosition(
+resolve,
+reject,
+{
+enableHighAccuracy:true,
+timeout:15000,
+maximumAge:0
+}
+);
+});
+}
+async function useCurrentLocationForPickup(){
+try{
+showNotification(
+"Getting your current location..."
+);
+const position =
+await getCurrentPosition();
+const lat =
+position.coords.latitude;
+const lng =
+position.coords.longitude;
+setPickupLocation(
+lat,
+lng,
+`Current location (${lat.toFixed(6)}, ${lng.toFixed(6)})`
+);
+map.setView([lat,lng],15);
+}catch(e){
+alert(
+"Unable to get your location. Please allow location access."
+);
+}
+}
+async function useCurrentLocationForDropoff(){
+try{
+showNotification(
+"Getting your current location..."
+);
+const position =
+await getCurrentPosition();
+const lat =
+position.coords.latitude;
+const lng =
+position.coords.longitude;
+setDropoffLocation(
+lat,
+lng,
+`Current location (${lat.toFixed(6)}, ${lng.toFixed(6)})`
+);
+map.setView([lat,lng],15);
+}catch(e){
+alert(
+"Unable to get your location. Please allow location access."
+);
+}
+}
+/* ============================================================
+LOCATION MARKERS
+============================================================ */
+function setPickupLocation(
+lat,
+lng,
+address
+){
+document.getElementById("pickupLat").value =
+lat;
+document.getElementById("pickupLng").value =
+lng;
+document.getElementById("pickup").value =
+address;
+if(pickupMarker)
+map.removeLayer(pickupMarker);
+pickupMarker =
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup("Pickup location")
+.openPopup();
+}
+function setDropoffLocation(
+lat,
+lng,
+address
+){
+document.getElementById("dropoffLat").value =
+lat;
+document.getElementById("dropoffLng").value =
+lng;
+document.getElementById("dropoff").value =
+address;
+if(dropoffMarker)
+map.removeLayer(dropoffMarker);
+dropoffMarker =
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup("Destination");
+map.fitBounds(
+L.latLngBounds(
+[lat,lng],
+pickupMarker
+? pickupMarker.getLatLng()
+: [lat,lng]
+),
+{
+padding:[40,40]
+}
+);
+}
+/* ============================================================
+DELIVERY REQUEST
+============================================================ */
 async function createShipment(){
-  if(!CLIENT_ID) return alert("Register first");
-  let p = document.getElementById("pickup").value;
-  let d = document.getElementById("dropoff").value;
-  let data = await safeFetch(`${API}/api/v1/shipments?client_id=${CLIENT_ID}&pickup_lat=6.6018&pickup_lng=3.3515&dropoff_lat=6.4557&dropoff_lng=3.4731&pickup_address=${encodeURIComponent(p)}&dropoff_address=${encodeURIComponent(d)}`, {method:"POST"});
-  if(!data) return;
-  REQUEST_ID = data.request_id;
-  document.getElementById("shipmentInfo").innerHTML = `✅ Request: <b>${REQUEST_ID}</b> | Price: ${data.price} NGN`;
-  connectTracking(REQUEST_ID);
+if(!CLIENT_ID)
+return alert(
+"Please register as a client first."
+);
+const pickup =
+document.getElementById("pickup").value.trim();
+const dropoff =
+document.getElementById("dropoff").value.trim();
+const pickupLat =
+document.getElementById("pickupLat").value;
+const pickupLng =
+document.getElementById("pickupLng").value;
+const dropoffLat =
+document.getElementById("dropoffLat").value;
+const dropoffLng =
+document.getElementById("dropoffLng").value;
+if(!pickup || !dropoff){
+document.getElementById("shipmentInfo").innerHTML =
+errorMessage(
+"Enter both pickup and destination."
+);
+return;
 }
+/*
+If coordinates were not selected, we use the existing
+Lagos defaults for compatibility with your original API.
+*/
+const finalPickupLat =
+pickupLat || "6.6018";
+const finalPickupLng =
+pickupLng || "3.3515";
+const finalDropoffLat =
+dropoffLat || "6.4557";
+const finalDropoffLng =
+dropoffLng || "3.4731";
+const url =
+`${API}/api/v1/shipments` +
+`?client_id=${encodeURIComponent(CLIENT_ID)}` +
+`&pickup_lat=${encodeURIComponent(finalPickupLat)}` +
+`&pickup_lng=${encodeURIComponent(finalPickupLng)}` +
+`&dropoff_lat=${encodeURIComponent(finalDropoffLat)}` +
+`&dropoff_lng=${encodeURIComponent(finalDropoffLng)}` +
+`&pickup_address=${encodeURIComponent(pickup)}` +
+`&dropoff_address=${encodeURIComponent(dropoff)}`;
+const data = await safeFetch(
+url,
+{
+method:"POST"
+}
+);
+if(!data) return;
+REQUEST_ID =
+data.request_id ||
+data.id ||
+data.requestId;
+document.getElementById("shipmentInfo").innerHTML = `
+<div class="success">
+✅ Delivery request created.<br>
+Request ID:
+<b>${escapeHtml(REQUEST_ID || "N/A")}</b><br>
+Price:
+<b>${escapeHtml(data.price ?? "Pending")} NGN</b>
+</div>
+`;
+showNotification(
+"Your delivery request has been sent to available riders."
+);
+if(REQUEST_ID){
+connectTracking(
+REQUEST_ID
+);
+}
+}
+/* ============================================================
+RIDER REQUEST ALERTS
+============================================================ */
+function startRiderPolling(){
+if(!RIDER_ID)
+return;
+getRiderRequests();
+if(riderPolling)
+clearInterval(riderPolling);
+/*
+Poll every 10 seconds.
+For production, replace this with WebSocket or push
+notifications through your backend.
+*/
+riderPolling =
+setInterval(
+getRiderRequests,
+10000
+);
+}
+async function getRiderRequests(){
+if(!RIDER_ID){
+document.getElementById("riderRequests").innerHTML =
+`<div class="warning">
+Register as a rider before receiving requests.
+</div>`;
+return;
+}
+const data = await safeFetch(
+`${API}${ENDPOINTS.riderRequests}?rider_id=${encodeURIComponent(RIDER_ID)}`,
+{
+method:"GET"
+}
+);
+if(!data)
+return;
+let requests = [];
+if(Array.isArray(data))
+requests = data;
+else if(Array.isArray(data.requests))
+requests = data.requests;
+else if(Array.isArray(data.data))
+requests = data.data;
+renderRiderRequests(
+requests
+);
+}
+function renderRiderRequests(requests){
+const container =
+document.getElementById("riderRequests");
+if(!requests.length){
+container.innerHTML =
+`<div class="empty">
+No new delivery requests.
+</div>`;
+return;
+}
+container.innerHTML =
+requests.map(request => {
+const requestId =
+request.request_id ||
+request.id ||
+"";
+const pickup =
+request.pickup_address ||
+request.pickup ||
+"Pickup not supplied";
+const destination =
+request.dropoff_address ||
+request.destination ||
+request.dropoff ||
+"Destination not supplied";
+const price =
+request.price ??
+"Pending";
+const status =
+request.status ||
+"NEW";
+return `
+<div class="request-card new">
+<div>
+<span class="badge credit">
+NEW REQUEST
+</span>
+</div>
+<p>
+<b>Request ID:</b>
+${escapeHtml(requestId)}
+</p>
+<p>
+<b>Pickup:</b><br>
+${escapeHtml(pickup)}
+</p>
+<p>
+<b>Destination:</b><br>
+${escapeHtml(destination)}
+</p>
+<p>
+<b>Price:</b>
+${escapeHtml(price)} NGN
+</p>
+<p class="status">
+Status: ${escapeHtml(status)}
+</p>
+<button
+class="green"
+onclick="acceptDeliveryRequest('${escapeHtml(requestId)}')">
+Accept Delivery Request
+</button>
+</div>
+`;
+}).join("");
+}
+/* ============================================================
+ACCEPT DELIVERY REQUEST
+============================================================ */
+async function acceptDeliveryRequest(
+requestId
+){
+if(!RIDER_ID)
+return alert(
+"Register as a rider first."
+);
+if(!requestId)
+return alert(
+"Invalid request ID."
+);
+const data =
+await safeFetch(
+API + ENDPOINTS.acceptRequest,
+{
+method:"POST",
+body:JSON.stringify({
+rider_id:RIDER_ID,
+request_id:requestId
+})
+}
+);
+if(!data)
+return;
+showNotification(
+"Delivery request accepted."
+);
+getRiderRequests();
+}
+/* ============================================================
+RIDER LOCATION SHARING
+============================================================ */
+async function shareRiderLocation(){
+if(!RIDER_ID)
+return alert(
+"Register as a rider first."
+);
+try{
+const position =
+await getCurrentPosition();
+const lat =
+position.coords.latitude;
+const lng =
+position.coords.longitude;
+const data =
+await safeFetch(
+API + ENDPOINTS.riderLocation,
+{
+method:"POST",
+body:JSON.stringify({
+rider_id:RIDER_ID,
+lat:lat,
+lng:lng
+})
+}
+);
+if(data){
+showNotification(
+"Your current location has been shared."
+);
+}
+}catch(e){
+alert(
+"Unable to access your current location."
+);
+}
+}
+/* ============================================================
+LIVE TRACKING
+============================================================ */
 function connectTracking(reqId){
-  let ws = new WebSocket(`ws://127.0.0.1:8080/ws/tracking/${reqId}`);
-  document.getElementById("trackStatus").innerText = "Tracking LIVE for "+reqId;
-  ws.onmessage = (e)=>{
-    try{
-      let data = JSON.parse(e.data);
-      let loc = data.rider_location || data;
-      if(loc && loc.lat){ riderMarker.setLatLng([loc.lat, loc.lng]); map.setView([loc.lat, loc.lng]); }
-    }catch{}
-  };
+if(!reqId)
+return;
+if(trackingSocket){
+try{
+trackingSocket.close();
+}catch{}
 }
+/*
+Your original code used:
+ws://127.0.0.1:8080
+That only works when the WebSocket server is running
+on the same computer.
+For a deployed application, set this to your actual
+WebSocket server URL.
+*/
+const WS_API =
+"wss://emmbio.onrender.com";
+const wsUrl =
+`${WS_API}/ws/tracking/${encodeURIComponent(reqId)}`;
+try{
+trackingSocket =
+new WebSocket(wsUrl);
+document.getElementById("trackStatus").innerText =
+"Tracking LIVE for " + reqId;
+trackingSocket.onopen = () => {
+document.getElementById("trackStatus").innerText =
+"🟢 Tracking LIVE for " + reqId;
+};
+trackingSocket.onmessage =
+(e) => {
+try{
+const data =
+JSON.parse(e.data);
+const loc =
+data.rider_location ||
+data;
+if(
+loc &&
+loc.lat !== undefined &&
+loc.lng !== undefined
+){
+riderMarker.setLatLng([
+Number(loc.lat),
+Number(loc.lng)
+]);
+map.setView([
+Number(loc.lat),
+Number(loc.lng)
+]);
+}
+}catch(err){
+console.log(
+"Invalid tracking message",
+err
+);
+}
+};
+trackingSocket.onerror = () => {
+document.getElementById("trackStatus").innerText =
+"Tracking connection unavailable.";
+};
+trackingSocket.onclose = () => {
+document.getElementById("trackStatus").innerText =
+"Tracking disconnected.";
+};
+}catch(e){
+document.getElementById("trackStatus").innerText =
+"Tracking unavailable.";
+}
+}
+/* ============================================================
+CLIENT / RIDER TABS
+============================================================ */
+function showClient(){
+document.getElementById("clientSection")
+.classList.remove("hidden");
+document.getElementById("riderSection")
+.classList.add("hidden");
+document.getElementById("clientTab")
+.classList.add("active");
+document.getElementById("riderTab")
+.classList.remove("active");
+}
+function showRider(){
+document.getElementById("clientSection")
+.classList.add("hidden");
+document.getElementById("riderSection")
+.classList.remove("hidden");
+document.getElementById("clientTab")
+.classList.remove("active");
+document.getElementById("riderTab")
+.classList.add("active");
+if(RIDER_ID){
+startRiderPolling();
+}
+}
+/* ============================================================
+END
+============================================================ */
 </script>
 </body>
 </html>
