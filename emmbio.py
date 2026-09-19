@@ -16,9 +16,7 @@ DateTime,
 Text
 )
 from sqlalchemy.orm import declarative_base, sessionmaker
-============================================================
-1. DATABASE
-============================================================
+
 DATABASE_URL = os.getenv(
 "DATABASE_URL",
 "sqlite:///./emmbio.db"
@@ -50,9 +48,7 @@ expire_on_commit=False
 Base = declarative_base()
 def gen_id(prefix):
 return f"{prefix}-{uuid.uuid4().hex[:8].upper()}"
-============================================================
-2. DATABASE MODELS
-============================================================
+
 class Client(Base):
 __tablename__ = "clients"
 
@@ -284,9 +280,7 @@ created_at = Column(
 Base.metadata.create_all(
 bind=engine
 )
-============================================================
-3. FASTAPI
-============================================================
+
 app = FastAPI(
 title="Emmbio Logistics API",
 version="2.0.0"
@@ -301,9 +295,7 @@ allow_methods=["*"],
 
 allow_headers=["*"]
 )
-============================================================
-4. PYDANTIC REQUEST MODELS
-============================================================
+
 class ClientRegistration(BaseModel):
 name: str
 
@@ -356,9 +348,7 @@ dropoff_lng: float
 pickup_address: str
 
 dropoff_address: str
-============================================================
-5. HOME
-============================================================
+
 @app.get("/")
 def home():
 return {
@@ -370,9 +360,7 @@ def health():
 return {
     "status": "healthy"
 }
-============================================================
-6. CLIENT REGISTRATION
-============================================================
+
 @app.post("/api/v1/clients/register")
 def register_client(
 data: ClientRegistration
@@ -444,9 +432,7 @@ try:
 finally:
 
     db.close()
-============================================================
-7. GET CLIENT
-============================================================
+
 @app.get("/api/v1/clients/{client_id}")
 def get_client(client_id: str):
 db = SessionLocal()
@@ -487,9 +473,7 @@ try:
 finally:
 
     db.close()
-============================================================
-8. RIDER REGISTRATION
-============================================================
+
 @app.post("/api/v1/riders/register")
 def register_rider(
 data: RiderRegistration
@@ -581,9 +565,7 @@ try:
 finally:
 
     db.close()
-============================================================
-9. GET RIDER
-============================================================
+
 @app.get("/api/v1/riders/{rider_id}")
 def get_rider(rider_id: str):
 db = SessionLocal()
@@ -626,9 +608,7 @@ try:
 finally:
 
     db.close()
-============================================================
-10. ADMIN/VERIFICATION ENDPOINT
-============================================================
+
 @app.post("/api/v1/riders/{rider_id}/verify")
 def verify_rider(rider_id: str):
 db = SessionLocal()
@@ -667,9 +647,7 @@ try:
 finally:
 
     db.close()
-============================================================
-11. WALLET FUNDING
-============================================================
+
 @app.post("/api/v1/wallet/fund")
 def fund(
 client_id: str,
@@ -732,9 +710,7 @@ try:
 finally:
 
     db.close()
-============================================================
-12. WALLET CHARGE
-============================================================
+
 @app.post("/api/v1/wallet/charge")
 def charge(
 client_id: str,
@@ -808,9 +784,7 @@ try:
 finally:
 
     db.close()
-============================================================
-13. WALLET BALANCE
-============================================================
+
 @app.get("/api/v1/wallet/balance/{client_id}")
 def balance(client_id: str):
 db = SessionLocal()
@@ -842,9 +816,7 @@ try:
 finally:
 
     db.close()
-============================================================
-14. TRANSACTIONS
-============================================================
+
 @app.get("/api/v1/transactions/{client_id}")
 def transactions(client_id: str):
 db = SessionLocal()
@@ -885,9 +857,7 @@ try:
 finally:
 
     db.close()
-============================================================
-15. CREATE SHIPMENT
-============================================================
+
 @app.post("/api/v1/shipments")
 def create_shipment(
 data: ShipmentCreate
@@ -985,9 +955,7 @@ try:
 finally:
 
     db.close()
-============================================================
-16. RIDER REQUEST NOTIFICATION
-============================================================
+
 @app.get("/api/v1/riders/requests")
 def rider_requests(
 rider_id: str
@@ -1078,9 +1046,7 @@ try:
 finally:
 
     db.close()
-============================================================
-17. RIDER ACCEPTS REQUEST
-============================================================
+
 @app.post("/api/v1/riders/requests/accept")
 def accept_request(
 data: AcceptRequest
@@ -1174,9 +1140,7 @@ try:
 finally:
 
     db.close()
-============================================================
-18. RIDER LOCATION
-============================================================
+
 @app.post("/api/v1/riders/location")
 def rider_location(
 data: RiderLocation
@@ -1229,9 +1193,7 @@ try:
 finally:
 
     db.close()
-============================================================
-19. GET SHIPMENT
-============================================================
+
 @app.get("/api/v1/shipments/{request_id}")
 def get_shipment(
 request_id: str
@@ -1334,9 +1296,7 @@ try:
 finally:
 
     db.close()
-============================================================
-20. COMPLETE DELIVERY
-============================================================
+
 @app.post("/api/v1/shipments/{request_id}/complete")
 def complete_shipment(
 request_id: str
@@ -1404,9 +1364,7 @@ try:
 finally:
 
     db.close()
-============================================================
-21. BANK ACCOUNT PLACEHOLDER
-============================================================
+
 @app.get("/api/v1/bank-accounts/{client_id}")
 def banks(client_id: str):
 return {
@@ -1414,9 +1372,7 @@ return {
     "message":
         "Bank API works - add your Flutterwave or Paystack integration here"
 }
-============================================================
-22. LOCAL / RENDER STARTUP
-============================================================
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host="0.0.0.0", port=port)
