@@ -3,5 +3,5 @@ uvicorn[standard]
 python-multipart
 pydantic
 sqlalchemy
-psycopg2-binary
 websockets
+psycopg2-binary
