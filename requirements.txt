@@ -4,4 +4,3 @@ python-multipart
 pydantic
 sqlalchemy
 websockets
-psycopg2-binary
